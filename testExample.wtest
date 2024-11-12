@@ -1,9 +1,160 @@
-import example.pepita
+import viajes.*
 
-describe "group of tests for pepita" {
+describe "test de 1. Viajes" {
+  const viajeCiudad = new ExcursionACiudad(
+    idiomas = ["ingles"],
+    cantidadAtracciones = 4
+  )
 
-  test "pepita has initial energy" {
-    assert.equals(100, pepita.energy())
+  const viajeTropical = new ExcursionACiudadTropical(
+    idiomas = ["ingles"],
+    cantidadAtracciones = 8
+  )
+
+  const viajeTrekking = new SalidaDeTrekking(
+    idiomas = ["ingles"],
+    kmDeSenderos = 250,
+    diasDeSol = 130
+  )
+  
+  test "una excursión a ciudad normal (no tropical) en la que se visitan 4 atracciones, lleva 2 días, no implica esfuerzo, y no sirve para broncearse." {
+    assert.equals(2, viajeCiudad.diasDuracion())
+    assert.notThat(viajeCiudad.implicaEsfuerzo())
+    assert.notThat(viajeCiudad.sirveParaBroncearse())
   }
 
+  test "una excursión a ciudad tropical en la que se visitan 8 atracciones, lleva 5 días, implica esfuerzo, y sirve para broncearse." {
+    assert.equals(5, viajeTropical.diasDuracion())
+    assert.that(viajeTropical.implicaEsfuerzo())
+    assert.that(viajeTropical.sirveParaBroncearse())
+  }
+
+  test "una salida de 250 kilómetros a un lugar con 130 días de sol por año: lleva 5 días, implica esfuerzo, y sirve para broncearse." {
+    assert.equals(5, viajeTrekking.diasDuracion())
+    assert.that(viajeTrekking.implicaEsfuerzo())
+    assert.that(viajeTrekking.sirveParaBroncearse())
+  }
 }
+
+describe "Test de 2. Viajes interesantes" {
+  const viajeCiudad = new ExcursionACiudad(
+    idiomas = ["ingles"],
+    cantidadAtracciones = 5
+  )
+  const viajeTrekking = new SalidaDeTrekking(
+    idiomas = ["ingles","chino"],
+    kmDeSenderos = 250,
+    diasDeSol = 130
+  )
+  test "el viaje a una ciudad que se usa 1 idioma pero se recorren 5 atraccones es interesante." {
+    assert.that(viajeCiudad.esInteresante())
+  }
+  test "un viaje de trekking donde se habalan varios idiomas y pega el sol 130 dias no es interesante" {
+    assert.notThat(viajeTrekking.esInteresante())
+  }
+}
+
+describe "Test de 4. Socios, agregar actividad" {
+  const viajePlaya1 = new ViajesDePlaya(
+    idiomas = ["ingles"],
+    largoDePlaya = 1000
+  )
+
+  const viajePlaya2 = new ViajesDePlaya(
+    idiomas = ["ingles"],
+    largoDePlaya = 2000
+  )
+
+  const claseGimnasia = new ClasesDeGimnasia()
+
+  const roque = new SocioTranquilo(
+    edad = 1,
+    idiomas = [],
+    maximoDeActividades = 2
+  )
+  const ana = new SocioTranquilo(
+    edad = 1,
+    idiomas = [],
+    maximoDeActividades = 3
+  )
+
+  method initialize(){
+    roque.realizarActividad(viajePlaya1)
+    roque.realizarActividad(viajePlaya2)
+    ana.realizarActividad(viajePlaya1)
+    ana.realizarActividad(viajePlaya2)
+  }
+
+  test "roque" {
+    assert.that(roque.esAdoradorDelSol())
+    assert.equals([viajePlaya2].asSet(), roque.actividadesEsforzadas())
+    assert.throwsException({ roque.realizarActividad(ClasesDeGimnasia) })
+  }
+  test "ana" {
+    ana.realizarActividad(claseGimnasia)
+
+    assert.notThat(ana.esAdoradorDelSol())
+    assert.equals([viajePlaya2,claseGimnasia].asSet(), ana.actividadesEsforzadas())
+  }
+}
+
+describe "Test de 5. Actividades que le atraen a cada socio" {
+  const socioTest = new SocioRelajado(
+    idiomas = ["español","quechua"],
+    edad = 1,
+    maximoDeActividades = 2
+  )
+  const actividadEspaniol = new ViajesDePlaya(
+    idiomas = ["español"],
+    largoDePlaya = 2000
+  )
+  const actividadQuechua = new ViajesDePlaya(
+    idiomas = ["quechua","aymara"],
+    largoDePlaya = 2000
+  )
+  const actividadFrancesItaliano = new ViajesDePlaya(
+    idiomas = ["frances","italiano"],
+    largoDePlaya = 2000
+  )
+  test "si un socio relajado habla español y quechua, entonces una actividad en español le va a atraer, una en quechua y aymará también, una en francés e italiano no." {
+    assert.that(socioTest.atraeAlSocio(actividadEspaniol))
+    assert.that(socioTest.atraeAlSocio(actividadQuechua))
+    assert.notThat(socioTest.atraeAlSocio(actividadFrancesItaliano))
+  }
+}
+
+describe "6. Actividades recomendadas para socios" {
+  const socioTest = new SocioRelajado(
+    idiomas = ["español","quechua","ingles"],
+    edad = 1,
+    maximoDeActividades = 3
+  )
+  const actividadEspaniol = new ViajesDePlaya(
+    idiomas = ["español"],
+    largoDePlaya = 2000
+  )
+  const actividadQuechua = new ViajesDePlaya(
+    idiomas = ["quechua","aymara"],
+    largoDePlaya = 2000
+  )
+  const viajeCiudad = new ExcursionACiudad(
+    idiomas = ["ingles"],
+    cantidadAtracciones = 5
+  )
+  
+  const claseGimnasia = new ClasesDeGimnasia()
+
+  method initialize(){
+    socioTest.realizarActividad(actividadEspaniol)
+    socioTest.realizarActividad(actividadQuechua)
+  }
+
+  test "description" {
+    assert.that(viajeCiudad.esRecomendadaPara(socioTest))
+  }
+
+  test "description" {
+    assert.notThat(claseGimnasia.esRecomendadaPara(socioTest))
+  }
+}
+
